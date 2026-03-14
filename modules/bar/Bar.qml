@@ -29,6 +29,120 @@ ColumnLayout {
         }
     }
 
+    function shouldOpenStatusIconOnHover(name: string): bool {
+        if (!Config.bar.popouts.statusIcons || !Config.bar.popouts.statusIconsShowOnHover)
+            return false;
+
+        switch (name) {
+        case "audio":
+            return Config.bar.popouts.audioShowOnHover;
+        case "network":
+        case "ethernet":
+            return Config.bar.popouts.networkShowOnHover;
+        case "bluetooth":
+            return Config.bar.popouts.bluetoothShowOnHover;
+        case "battery":
+            return Config.bar.popouts.batteryShowOnHover;
+        case "kblayout":
+            return Config.bar.popouts.kbLayoutShowOnHover;
+        case "lockstatus":
+            return Config.bar.popouts.lockStatusShowOnHover;
+        default:
+            return false;
+        }
+    }
+
+    function openCompactPopout(name: string, centerY: real): void {
+        if (popouts.hasCurrent && popouts.currentName === name && !popouts.isDetached) {
+            popouts.hasCurrent = false;
+            return;
+        }
+
+        popouts.currentName = name;
+        popouts.currentCenter = centerY;
+        popouts.hasCurrent = true;
+    }
+
+    function openStatusIconClickTarget(name: string, centerY: real): void {
+        if (!Config.bar.popouts.statusIcons)
+            return;
+
+        switch (name) {
+        case "audio":
+            openCompactPopout("audio", centerY);
+            break;
+        case "network":
+        case "ethernet":
+            openCompactPopout("network", centerY);
+            break;
+        case "bluetooth":
+            openCompactPopout("bluetooth", centerY);
+            break;
+        case "battery":
+        case "kblayout":
+        case "lockstatus":
+            openCompactPopout(name, centerY);
+            break;
+        default:
+            break;
+        }
+    }
+
+    function resolveStatusIcon(y: real): var {
+        const statusIcons = childAt(width / 2, y) as WrappedLoader;
+        if (!statusIcons || statusIcons.id !== "statusIcons")
+            return null;
+
+        const items = statusIcons.item.items;
+        const localY = mapToItem(items, 0, y).y;
+
+        for (let i = 0; i < items.children.length; i++) {
+            const child = items.children[i];
+            if (!child?.visible)
+                continue;
+
+            const childHeight = child.height > 0 ? child.height : child.implicitHeight;
+            if (localY >= child.y && localY <= child.y + childHeight)
+                return child;
+        }
+
+        return null;
+    }
+
+    function handleClick(y: real): void {
+        const ch = childAt(width / 2, y) as WrappedLoader;
+        if (!ch)
+            return;
+
+        const id = ch.id;
+        const item = ch.item;
+
+        if (id === "activeWindow" && Config.bar.popouts.activeWindow && !Config.bar.popouts.activeWindowShowOnHover) {
+            openCompactPopout("activewindow", item.mapToItem(root, 0, item.implicitHeight / 2).y);
+            return;
+        }
+
+        if (id === "tray" && Config.bar.popouts.tray && !Config.bar.popouts.trayShowOnHover) {
+            if (Config.bar.tray.compact && !item.expanded && item.expandIcon.contains(mapToItem(item.expandIcon, item.implicitWidth / 2, y))) {
+                item.expanded = true;
+            }
+            return;
+        }
+
+        if (id !== "statusIcons" || !Config.bar.popouts.statusIcons)
+            return;
+
+        const icon = resolveStatusIcon(y);
+        if (!icon)
+            return;
+
+        if (Config.bar.popouts.statusIconsShowOnHover && shouldOpenStatusIconOnHover(icon.name))
+            return;
+
+        const centerY = icon.mapToItem(root, 0, (icon.item?.implicitHeight ?? icon.implicitHeight) / 2).y;
+        openStatusIconClickTarget(icon.name, centerY);
+    }
+
     function checkPopout(y: real): void {
         const ch = childAt(width / 2, y) as WrappedLoader;
 
@@ -46,14 +160,15 @@ ColumnLayout {
         const itemHeight = item.implicitHeight;
 
         if (id === "statusIcons" && Config.bar.popouts.statusIcons) {
-            const items = item.items;
-            const icon = items.childAt(items.width / 2, mapToItem(items, 0, y).y);
-            if (icon) {
+            const icon = resolveStatusIcon(y);
+            if (icon && shouldOpenStatusIconOnHover(icon.name)) {
                 popouts.currentName = icon.name;
                 popouts.currentCenter = Qt.binding(() => icon.mapToItem(root, 0, icon.implicitHeight / 2).y);
                 popouts.hasCurrent = true;
+            } else {
+                popouts.hasCurrent = false;
             }
-        } else if (id === "tray" && Config.bar.popouts.tray) {
+        } else if (id === "tray" && Config.bar.popouts.tray && Config.bar.popouts.trayShowOnHover) {
             if (!Config.bar.tray.compact || (item.expanded && !item.expandIcon.contains(mapToItem(item.expandIcon, item.implicitWidth / 2, y)))) {
                 const index = Math.floor(((y - top - item.padding * 2 + item.spacing) / item.layout.implicitHeight) * item.items.count);
                 const trayItem = item.items.itemAt(index);
@@ -68,10 +183,12 @@ ColumnLayout {
                 popouts.hasCurrent = false;
                 item.expanded = true;
             }
-        } else if (id === "activeWindow" && Config.bar.popouts.activeWindow) {
+        } else if (id === "activeWindow" && Config.bar.popouts.activeWindow && Config.bar.popouts.activeWindowShowOnHover) {
             popouts.currentName = id.toLowerCase();
             popouts.currentCenter = item.mapToItem(root, 0, itemHeight / 2).y;
             popouts.hasCurrent = true;
+        } else {
+            popouts.hasCurrent = false;
         }
     }
 
@@ -137,13 +254,17 @@ ColumnLayout {
                     sourceComponent: ActiveWindow {
                         bar: root
                         monitor: Brightness.getMonitorForScreen(root.screen)
+                        popouts: root.popouts
                     }
                 }
             }
             DelegateChoice {
                 roleValue: "tray"
                 delegate: WrappedLoader {
-                    sourceComponent: Tray {}
+                    sourceComponent: Tray {
+                        bar: root
+                        popouts: root.popouts
+                    }
                 }
             }
             DelegateChoice {
@@ -155,7 +276,10 @@ ColumnLayout {
             DelegateChoice {
                 roleValue: "statusIcons"
                 delegate: WrappedLoader {
-                    sourceComponent: StatusIcons {}
+                    sourceComponent: StatusIcons {
+                        bar: root
+                        popouts: root.popouts
+                    }
                 }
             }
             DelegateChoice {

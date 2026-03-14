@@ -65,7 +65,7 @@ CustomMouseArea {
             if (!dashboardShortcutActive)
                 visibilities.dashboard = false;
 
-            if (!utilitiesShortcutActive)
+            if (!utilitiesShortcutActive || !Config.utilities.showOnHover)
                 visibilities.utilities = false;
 
             if (!popouts.currentName.startsWith("traymenu") || (popouts.current?.depth ?? 0) <= 1) {
@@ -187,20 +187,35 @@ CustomMouseArea {
                 visibilities.dashboard = false;
         }
 
-        // Show utilities on hover
-        const showUtilities = inBottomPanel(panels.utilities, x, y);
+        const showUtilities = Config.utilities.showOnHover && inBottomPanel(panels.utilities, x, y);
 
         // Always update visibility based on hover if not in shortcut mode
         if (!utilitiesShortcutActive) {
-            visibilities.utilities = showUtilities;
+            if (Config.utilities.showOnHover)
+                visibilities.utilities = showUtilities;
         } else if (showUtilities) {
             // If hovering over utilities area while in shortcut mode, transition to hover control
             utilitiesShortcutActive = false;
         }
 
+        // Show/hide utilities on drag
+        if (pressed && inBottomPanel(panels.utilities, dragStart.x, dragStart.y) && withinPanelWidth(panels.utilities, x, y)) {
+            if (dragY < -Config.launcher.dragThreshold)
+                visibilities.utilities = true;
+            else if (dragY > Config.launcher.dragThreshold)
+                visibilities.utilities = false;
+        }
+
         // Show popouts on hover
-        if (x < bar.implicitWidth) {
-            bar.checkPopout(y);
+        if (Config.bar.popouts.activeWindowShowOnHover || Config.bar.popouts.trayShowOnHover || (Config.bar.popouts.statusIconsShowOnHover
+                && (Config.bar.popouts.audioShowOnHover || Config.bar.popouts.networkShowOnHover || Config.bar.popouts.bluetoothShowOnHover
+                || Config.bar.popouts.batteryShowOnHover || Config.bar.popouts.kbLayoutShowOnHover || Config.bar.popouts.lockStatusShowOnHover))) {
+            if (x < bar.implicitWidth) {
+                bar.checkPopout(y);
+            } else if ((!popouts.currentName.startsWith("traymenu") || (popouts.current?.depth ?? 0) <= 1) && !inLeftPanel(panels.popouts, x, y)) {
+                popouts.hasCurrent = false;
+                bar.closeTray();
+            }
         } else if ((!popouts.currentName.startsWith("traymenu") || (popouts.current?.depth ?? 0) <= 1) && !inLeftPanel(panels.popouts, x, y)) {
             popouts.hasCurrent = false;
             bar.closeTray();
@@ -260,6 +275,11 @@ CustomMouseArea {
 
         function onUtilitiesChanged() {
             if (root.visibilities.utilities) {
+                if (!Config.utilities.showOnHover) {
+                    root.utilitiesShortcutActive = false;
+                    return;
+                }
+
                 // Utilities became visible, immediately check if this should be shortcut mode
                 const inUtilitiesArea = root.inBottomPanel(root.panels.utilities, root.mouseX, root.mouseY);
                 if (!inUtilitiesArea) {

@@ -61,8 +61,17 @@ JsonObject {
 
     component Popouts: JsonObject {
         property bool activeWindow: true
+        property bool activeWindowShowOnHover: true
         property bool tray: true
+        property bool trayShowOnHover: true
         property bool statusIcons: true
+        property bool statusIconsShowOnHover: true
+        property bool audioShowOnHover: true
+        property bool networkShowOnHover: true
+        property bool bluetoothShowOnHover: true
+        property bool batteryShowOnHover: true
+        property bool kbLayoutShowOnHover: true
+        property bool lockStatusShowOnHover: true
     }
 
     component Workspaces: JsonObject {

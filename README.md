@@ -376,8 +376,17 @@ default, you must create it manually.
         "persistent": true,
         "popouts": {
             "activeWindow": true,
+            "activeWindowShowOnHover": true,
+            "audioShowOnHover": true,
+            "batteryShowOnHover": true,
+            "bluetoothShowOnHover": true,
+            "kbLayoutShowOnHover": true,
+            "lockStatusShowOnHover": true,
+            "networkShowOnHover": true,
             "statusIcons": true,
-            "tray": true
+            "statusIconsShowOnHover": true,
+            "tray": true,
+            "trayShowOnHover": true
         },
         "scrollActions": {
             "brightness": true,
@@ -625,6 +634,7 @@ default, you must create it manually.
     },
     "utilities": {
         "enabled": true,
+        "showOnHover": true,
         "maxToasts": 4,
         "toasts": {
             "audioInputChanged": true,
@@ -654,6 +664,37 @@ default, you must create it manually.
     }
 }
 ```
+
+You can disable any left-bar hover popup in JSON without disabling the underlying feature. Example:
+
+```json
+{
+  "bar": {
+    "popouts": {
+      "activeWindowShowOnHover": false,
+      "trayShowOnHover": false,
+      "statusIconsShowOnHover": true,
+      "audioShowOnHover": false,
+      "networkShowOnHover": false,
+      "bluetoothShowOnHover": false,
+      "batteryShowOnHover": false,
+      "kbLayoutShowOnHover": false,
+      "lockStatusShowOnHover": false
+    }
+  },
+  "utilities": {
+    "showOnHover": false
+  }
+}
+```
+
+When a hover trigger is disabled, the popup remains available through explicit interaction:
+- active window popout opens on click
+- tray menus open on left click
+- audio opens its compact popout on click
+- network and bluetooth open their compact popouts on click
+- battery, keyboard layout, and lock status open their compact popouts on click
+- utilities open by drag only
 
 </details>
 

@@ -200,8 +200,17 @@ Singleton {
             },
             popouts: {
                 activeWindow: bar.popouts.activeWindow,
+                activeWindowShowOnHover: bar.popouts.activeWindowShowOnHover,
                 tray: bar.popouts.tray,
-                statusIcons: bar.popouts.statusIcons
+                trayShowOnHover: bar.popouts.trayShowOnHover,
+                statusIcons: bar.popouts.statusIcons,
+                statusIconsShowOnHover: bar.popouts.statusIconsShowOnHover,
+                audioShowOnHover: bar.popouts.audioShowOnHover,
+                networkShowOnHover: bar.popouts.networkShowOnHover,
+                bluetoothShowOnHover: bar.popouts.bluetoothShowOnHover,
+                batteryShowOnHover: bar.popouts.batteryShowOnHover,
+                kbLayoutShowOnHover: bar.popouts.kbLayoutShowOnHover,
+                lockStatusShowOnHover: bar.popouts.lockStatusShowOnHover
             },
             workspaces: {
                 shown: bar.workspaces.shown,
@@ -404,6 +413,7 @@ Singleton {
     function serializeUtilities(): var {
         return {
             enabled: utilities.enabled,
+            showOnHover: utilities.showOnHover,
             maxToasts: utilities.maxToasts,
             sizes: {
                 width: utilities.sizes.width,

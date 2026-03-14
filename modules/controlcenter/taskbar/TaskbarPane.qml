@@ -43,8 +43,18 @@ Item {
     property bool scrollVolume: Config.bar.scrollActions.volume ?? true
     property bool scrollBrightness: Config.bar.scrollActions.brightness ?? true
     property bool popoutActiveWindow: Config.bar.popouts.activeWindow ?? true
+    property bool popoutActiveWindowShowOnHover: Config.bar.popouts.activeWindowShowOnHover ?? true
     property bool popoutTray: Config.bar.popouts.tray ?? true
+    property bool popoutTrayShowOnHover: Config.bar.popouts.trayShowOnHover ?? true
     property bool popoutStatusIcons: Config.bar.popouts.statusIcons ?? true
+    property bool popoutStatusIconsShowOnHover: Config.bar.popouts.statusIconsShowOnHover ?? true
+    property bool popoutAudioShowOnHover: Config.bar.popouts.audioShowOnHover ?? true
+    property bool popoutNetworkShowOnHover: Config.bar.popouts.networkShowOnHover ?? true
+    property bool popoutBluetoothShowOnHover: Config.bar.popouts.bluetoothShowOnHover ?? true
+    property bool popoutBatteryShowOnHover: Config.bar.popouts.batteryShowOnHover ?? true
+    property bool popoutKbLayoutShowOnHover: Config.bar.popouts.kbLayoutShowOnHover ?? true
+    property bool popoutLockStatusShowOnHover: Config.bar.popouts.lockStatusShowOnHover ?? true
+    property bool utilitiesShowOnHover: Config.utilities.showOnHover ?? true
 
     anchors.fill: parent
 
@@ -86,8 +96,18 @@ Item {
         Config.bar.scrollActions.volume = root.scrollVolume;
         Config.bar.scrollActions.brightness = root.scrollBrightness;
         Config.bar.popouts.activeWindow = root.popoutActiveWindow;
+        Config.bar.popouts.activeWindowShowOnHover = root.popoutActiveWindowShowOnHover;
         Config.bar.popouts.tray = root.popoutTray;
+        Config.bar.popouts.trayShowOnHover = root.popoutTrayShowOnHover;
         Config.bar.popouts.statusIcons = root.popoutStatusIcons;
+        Config.bar.popouts.statusIconsShowOnHover = root.popoutStatusIconsShowOnHover;
+        Config.bar.popouts.audioShowOnHover = root.popoutAudioShowOnHover;
+        Config.bar.popouts.networkShowOnHover = root.popoutNetworkShowOnHover;
+        Config.bar.popouts.bluetoothShowOnHover = root.popoutBluetoothShowOnHover;
+        Config.bar.popouts.batteryShowOnHover = root.popoutBatteryShowOnHover;
+        Config.bar.popouts.kbLayoutShowOnHover = root.popoutKbLayoutShowOnHover;
+        Config.bar.popouts.lockStatusShowOnHover = root.popoutLockStatusShowOnHover;
+        Config.utilities.showOnHover = root.utilitiesShowOnHover;
 
         const entries = [];
         for (let i = 0; i < entriesModel.count; i++) {
@@ -555,6 +575,25 @@ Item {
                                 }
                             }
                         }
+
+                        SectionContainer {
+                            Layout.fillWidth: true
+                            alignTop: true
+
+                            StyledText {
+                                text: qsTr("Utilities")
+                                font.pointSize: Appearance.font.size.normal
+                            }
+
+                            SwitchRow {
+                                label: qsTr("Show on hover")
+                                checked: root.utilitiesShowOnHover
+                                onToggled: checked => {
+                                    root.utilitiesShowOnHover = checked;
+                                    root.saveConfig();
+                                }
+                            }
+                        }
                     }
 
                     ColumnLayout {
@@ -595,6 +634,97 @@ Item {
                                 checked: root.popoutStatusIcons
                                 onToggled: checked => {
                                     root.popoutStatusIcons = checked;
+                                    root.saveConfig();
+                                }
+                            }
+                        }
+
+                        SectionContainer {
+                            Layout.fillWidth: true
+                            alignTop: true
+
+                            StyledText {
+                                text: qsTr("Hover Triggers")
+                                font.pointSize: Appearance.font.size.normal
+                            }
+
+                            SwitchRow {
+                                label: qsTr("Active window popout shows on hover")
+                                checked: root.popoutActiveWindowShowOnHover
+                                onToggled: checked => {
+                                    root.popoutActiveWindowShowOnHover = checked;
+                                    root.saveConfig();
+                                }
+                            }
+
+                            SwitchRow {
+                                label: qsTr("Tray menus show on hover")
+                                checked: root.popoutTrayShowOnHover
+                                onToggled: checked => {
+                                    root.popoutTrayShowOnHover = checked;
+                                    root.saveConfig();
+                                }
+                            }
+
+                            SwitchRow {
+                                label: qsTr("Status popouts show on hover")
+                                checked: root.popoutStatusIconsShowOnHover
+                                onToggled: checked => {
+                                    root.popoutStatusIconsShowOnHover = checked;
+                                    root.saveConfig();
+                                }
+                            }
+
+                            SwitchRow {
+                                label: qsTr("Audio popout shows on hover")
+                                checked: root.popoutAudioShowOnHover
+                                onToggled: checked => {
+                                    root.popoutAudioShowOnHover = checked;
+                                    root.saveConfig();
+                                }
+                            }
+
+                            SwitchRow {
+                                label: qsTr("Network popout shows on hover")
+                                checked: root.popoutNetworkShowOnHover
+                                onToggled: checked => {
+                                    root.popoutNetworkShowOnHover = checked;
+                                    root.saveConfig();
+                                }
+                            }
+
+                            SwitchRow {
+                                label: qsTr("Bluetooth popout shows on hover")
+                                checked: root.popoutBluetoothShowOnHover
+                                onToggled: checked => {
+                                    root.popoutBluetoothShowOnHover = checked;
+                                    root.saveConfig();
+                                }
+                            }
+
+                            SwitchRow {
+                                label: qsTr("Battery popout shows on hover")
+                                checked: root.popoutBatteryShowOnHover
+                                onToggled: checked => {
+                                    root.popoutBatteryShowOnHover = checked;
+                                    root.saveConfig();
+                                }
+                            }
+
+                            SwitchRow {
+                                label: qsTr("Keyboard layout popout shows on hover")
+                                checked: root.popoutKbLayoutShowOnHover
+                                onToggled: checked => {
+                                    root.popoutKbLayoutShowOnHover = checked;
+                                    root.saveConfig();
+                                }
+                            }
+
+                            SwitchRow {
+                                label: qsTr("Lock status popout shows on hover")
+                                checked: root.popoutLockStatusShowOnHover
+                                onToggled: checked => {
+                                    root.popoutLockStatusShowOnHover = checked;
                                     root.saveConfig();
                                 }
                             }

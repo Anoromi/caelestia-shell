@@ -10,6 +10,9 @@ import QtQuick
 StyledRect {
     id: root
 
+    required property Item bar
+    required property Item popouts
+
     readonly property alias layout: layout
     readonly property alias items: items
     readonly property alias expandIcon: expandIcon
@@ -71,7 +74,11 @@ StyledRect {
                 values: SystemTray.items.values.filter(i => !Config.bar.tray.hiddenIcons.includes(i.id))
             }
 
-            TrayItem {}
+            TrayItem {
+                bar: root.bar
+                popouts: root.popouts
+                tray: root
+            }
         }
 
         Behavior on opacity {
@@ -88,8 +95,28 @@ StyledRect {
         active: Config.bar.tray.compact && items.count > 0
 
         sourceComponent: Item {
-            implicitWidth: expandIconInner.implicitWidth
+            implicitWidth: root.implicitWidth
             implicitHeight: expandIconInner.implicitHeight - Appearance.padding.small * 2
+
+            SegmentBackground {
+                anchors.fill: parent
+                active: root.expanded
+                pressed: expandStateLayer.pressed
+                roundTop: !root.expanded
+                roundBottom: true
+            }
+
+            StateLayer {
+                id: expandStateLayer
+
+                anchors.fill: parent
+                showHoverBackground: false
+                enabled: Config.bar.popouts.tray && !Config.bar.popouts.trayShowOnHover
+
+                function onClicked(): void {
+                    root.expanded = !root.expanded;
+                }
+            }
 
             MaterialIcon {
                 id: expandIconInner
@@ -116,6 +143,30 @@ StyledRect {
         Anim {
             duration: Appearance.anim.durations.expressiveDefaultSpatial
             easing.bezierCurve: Appearance.anim.curves.expressiveDefaultSpatial
+        }
+    }
+
+    component SegmentBackground: Item {
+        id: segmentBg
+
+        property bool active
+        property bool pressed
+        property bool roundTop: true
+        property bool roundBottom: true
+        property color activeColor: Colours.layer(Colours.palette.m3surfaceContainerHighest, 2)
+        property color pressedColor: Qt.alpha(Colours.palette.m3onSurface, 0.12)
+        readonly property color fillColor: active ? activeColor : pressed ? pressedColor : "transparent"
+        readonly property real cornerRadius: Math.min(Math.min(width / 2, height / 2), Appearance.rounding.full)
+
+        clip: true
+
+        StyledRect {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            y: segmentBg.roundTop ? 0 : -segmentBg.cornerRadius
+            height: parent.height + (segmentBg.roundTop ? 0 : segmentBg.cornerRadius) + (segmentBg.roundBottom ? 0 : segmentBg.cornerRadius)
+            radius: segmentBg.cornerRadius
+            color: segmentBg.fillColor
         }
     }
 }
